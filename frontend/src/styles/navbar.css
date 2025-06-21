@@ -1,0 +1,124 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30, 60, 114, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 16px 40px;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar li {
+  display: inline;
+}
+
+.navbar a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.navbar a:hover {
+  color: #4facfe;
+  background: rgba(79, 172, 254, 0.1);
+}
+
+/* Navbar active state and button styles */
+.nav-link, .nav-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: inherit;
+}
+
+.nav-link:hover {
+  color: #4facfe;
+  background: rgba(79, 172, 254, 0.1);
+}
+
+.nav-link.active {
+  color: #4facfe;
+  background: rgba(79, 172, 254, 0.2);
+  font-weight: 600;
+}
+
+.nav-btn {
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  color: #1e3c72;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+}
+
+.nav-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+}
+
+.nav-btn.active {
+  background: linear-gradient(45deg, #00f2fe, #4facfe);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(79, 172, 254, 0.5);
+}
+
+/* Responsive Design for Navbar */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 12px 20px;
+    flex-wrap: wrap;
+  }
+  
+  .navbar ul {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 15px;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+  }
+  
+  .nav-btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+  }
+}

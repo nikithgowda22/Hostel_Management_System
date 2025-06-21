@@ -1,0 +1,96 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Main wrapper with original color */
+.facilities-wrapper {
+  background-color: #22437e; /* Exact color from image */
+  padding: 80px 20px;
+  text-align: center;
+  color: white;
+}
+
+/* Header styles */
+.facilities-header {
+  margin-bottom: 50px;
+}
+
+.facilities-header h1 {
+  font-size: 2.8rem;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.facilities-header p {
+  font-size: 1.1rem;
+  color: #e8f4fd;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Grid layout */
+.facilities-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Facility card styling */
+.facility-card {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 40px 25px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.facility-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon styling */
+.facility-icon {
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+}
+
+/* Card title */
+.facility-content h3 {
+  color: #4facfe; /* Light blue accent as before */
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+/* Card description */
+.facility-content p {
+  color: #e8f4fd;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .facilities-header h1 {
+    font-size: 2rem;
+  }
+
+  .facilities-header p {
+    font-size: 1rem;
+  }
+
+  .facility-card {
+    padding: 30px 20px;
+  }
+}
