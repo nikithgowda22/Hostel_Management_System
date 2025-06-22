@@ -1,35 +1,103 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import '../styles/login.css';
 
 const roles = ["Warden", "Admin", "Student"];
 
 const Login = () => {
-  const handleSubmit = (e) => {
+  const navigate = useNavigate(); 
+
+  const [formData, setFormData] = useState({
+    role: '',
+    email: '',
+    password: '',
+  });
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login form submitted');
+
+    try {
+      const res = await fetch("http://localhost:8080/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        console.log("Logged in user:", data.user);
+
+        if (data.user.role === "Student") {
+          navigate("/student-dashboard");
+        } else {
+          navigate("/");
+        }
+      } else {
+        alert(data.message || "Login failed");
+      }
+
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Server error. Try again later.");
+    }
   };
 
   return (
     <form className="form-card" onSubmit={handleSubmit}>
       <h2>Login</h2>
+
       <label>
         Role
-        <select required>
+        <select
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          required
+        >
           <option value="">Select Role</option>
           {roles.map(role => (
             <option key={role} value={role}>{role}</option>
           ))}
         </select>
       </label>
+
       <label>
         Email
-        <input type="email" required placeholder="Enter your email" />
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="Enter your email"
+          value={formData.email}
+          onChange={handleChange}
+        />
       </label>
+
       <label>
         Password
-        <input type="password" required placeholder="Enter password" />
+        <input
+          type="password"
+          name="password"
+          required
+          placeholder="Enter password"
+          value={formData.password}
+          onChange={handleChange}
+        />
       </label>
+
       <button type="submit" className="form-btn">Login</button>
     </form>
   );

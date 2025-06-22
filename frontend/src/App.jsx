@@ -1,37 +1,67 @@
-// src/App.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./index.css";
 
-import Navbar from "./components/Navbar";
+import PublicLayout from "./layouts/PublicLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
+
 import HeroSection from "./components/HeroSection";
 import Facilities from "./components/Facilities";
 import Contact from "./components/Contact";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import StudentDashboard from "./components/dashboards/StudentDashboard"; 
 
-function HomePage() {
-  return (
-    <>
-      <HeroSection />
-      <div id="facilities">
-        <Facilities />
-      </div>
-      <div id="contact">
-        <Contact />
-      </div>
-    </>
-  );
-}
+const HomePage = () => (
+  <>
+    <HeroSection />
+    <div id="facilities">
+      <Facilities />
+    </div>
+    <div id="contact">
+      <Contact />
+    </div>
+  </>
+);
 
 function App() {
   return (
     <Router>
-      <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+
+        <Route
+          path="/"
+          element={
+            <PublicLayout>
+              <HomePage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicLayout>
+              <Login />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PublicLayout>
+              <Signup />
+            </PublicLayout>
+          }
+        />
+
+        <Route
+          path="/student-dashboard"
+          element={
+            <DashboardLayout>
+              <StudentDashboard />
+            </DashboardLayout>
+          }
+        />
       </Routes>
     </Router>
   );
