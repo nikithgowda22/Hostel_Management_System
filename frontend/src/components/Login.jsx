@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import '../styles/login.css';
 
-const roles = ["Warden", "Admin", "Student"];
+const roles = ["Warden/Admin","Student"];
 
 const Login = () => {
   const navigate = useNavigate(); 

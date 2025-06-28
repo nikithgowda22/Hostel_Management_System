@@ -1,34 +1,25 @@
-// import React, { useEffect, useState } from 'react';
-
-// const StudentDashboard = () => {
-//   const [user, setUser] = useState(null);
-
-//   useEffect(() => {
-//     const storedUser = JSON.parse(localStorage.getItem('user'));
-//     if (!storedUser || storedUser.role !== "Student") {
-//       window.location.href = "/login"; 
-//     } else {
-//       setUser(storedUser);
-//     }
-//   }, []);
-
-//   if (!user) return <p>Loading...</p>;
-
-//   return (
-//     <div className="dashboard">
-//       <h1>Welcome, {user.name}</h1>
-//       <p>Email: {user.email}</p>
-//     </div>
-//   );
-// };
-
-// export default StudentDashboard;
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 
 const StudentDashboard = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (!storedUser || storedUser.role !== 'Student') {
+      window.location.href = '/login';
+    } else {
+      setUser(storedUser);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
 
   const dashboardStats = [
     { title: 'STUDENTS', count: 5, color: 'blue', action: 'FULL DETAIL' },
@@ -69,7 +60,7 @@ const StudentDashboard = () => {
     </div>
   );
 
-  const renderRegistration = () => (
+ const renderRegistration = () => (
     <div className="registration-content">
       <h1 className="page-title">Registration</h1>
       <form className="registration-form">
@@ -134,16 +125,8 @@ const StudentDashboard = () => {
               <input type="text" defaultValue="10800121" />
             </div>
             <div className="form-row">
-              <label>First Name</label>
-              <input type="text" defaultValue="Anuj" />
-            </div>
-            <div className="form-row">
-              <label>Middle Name</label>
-              <input type="text" />
-            </div>
-            <div className="form-row">
-              <label>Last Name</label>
-              <input type="text" defaultValue="kumar" />
+              <label>Full Name</label>
+              <input type="text" defaultValue={user.name} />
             </div>
             <div className="form-row">
               <label>Gender</label>
@@ -155,7 +138,7 @@ const StudentDashboard = () => {
             </div>
             <div className="form-row">
               <label>Email Id</label>
-              <input type="email" defaultValue="test@gmail.com" />
+              <input type="email" defaultValue={user.email} />
             </div>
             <div className="form-row">
               <label>Emergency Contact</label>
@@ -248,39 +231,45 @@ const StudentDashboard = () => {
       default:
         return (
           <div className="dashboard-content">
-            <h1 className="page-title">{menuItems.find(item => item.id === currentView)?.label || 'Page'}</h1>
+            <h1 className="page-title">
+              {menuItems.find(item => item.id === currentView)?.label || 'Page'}
+            </h1>
             <p>This section is under development.</p>
           </div>
         );
     }
   };
 
+  if (!user) return <p>Loading...</p>;
+
   return (
     <div className="hostel-management">
       <nav className="top-nav">
         <div className="nav-left">
-          <button
-            className="menu-toggle"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            ☰
-          </button>
+          <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
           <h1>Hostel Management System</h1>
         </div>
         <div className="nav-right">
-          <div className="user-account">
-            <div className="user-avatar">👤</div>
-            <span>Account</span>
-            <span className="dropdown-arrow">▼</span>
+          <div className="user-dropdown" onClick={() => setShowDropdown(!showDropdown)}>
+            <div className="user-account">
+              <div className="user-avatar">👤</div>
+              <span>{user.name}</span>
+              <span className="dropdown-arrow">▼</span>
+            </div>
+            {showDropdown && (
+              <div className="user-dropdown-menu">
+                <button onClick={handleLogout}>Logout</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
       <div className="main-container">
         <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
-          <div className="sidebar-header">
+          {/* <div className="sidebar-header">
             <span className="sidebar-title">MAIN</span>
-          </div>
+          </div> */}
           <nav className="sidebar-nav">
             {menuItems.map((item) => (
               <button
@@ -289,7 +278,7 @@ const StudentDashboard = () => {
                 onClick={() => setCurrentView(item.id)}
               >
                 <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
+                <span className="nav-label">{sidebarOpen && item.label}</span>
               </button>
             ))}
           </nav>
@@ -304,3 +293,4 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
+

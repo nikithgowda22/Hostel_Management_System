@@ -57,9 +57,7 @@ function App() {
         <Route
           path="/student-dashboard"
           element={
-            <DashboardLayout>
               <StudentDashboard />
-            </DashboardLayout>
           }
         />
       </Routes>

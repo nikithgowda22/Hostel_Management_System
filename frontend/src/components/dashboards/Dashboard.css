@@ -1,4 +1,6 @@
-/* General Layout */
+/* Reset default margin/padding */
+
+
 .hostel-management {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
@@ -15,8 +17,10 @@
   padding: 10px 20px;
 }
 
-.top-nav .nav-left h1 {
-  margin-left: 10px;
+.top-nav .nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .menu-toggle {
@@ -31,9 +35,9 @@
   display: flex;
   flex: 1;
   height: calc(100vh - 60px);
+  overflow: hidden;
 }
 
-/* Sidebar */
 .sidebar {
   width: 250px;
   background-color: #1e40af;
@@ -60,7 +64,6 @@
 
 .nav-item {
   padding: 15px 20px;
-  text-align: left;
   background: none;
   border: none;
   color: white;
@@ -79,7 +82,6 @@
   margin-right: 10px;
 }
 
-/* Main Content */
 .main-content {
   flex: 1;
   background-color: #f3f4f6;
@@ -92,7 +94,6 @@
   margin-bottom: 20px;
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -128,14 +129,12 @@
   margin-left: 5px;
 }
 
-/* Stat Card Colors */
 .blue { background-color: #3b82f6; }
 .green { background-color: #10b981; }
 .light-blue { background-color: #60a5fa; }
 .red { background-color: #ef4444; }
 .orange { background-color: #f97316; }
 
-/* Registration Form */
 .registration-form {
   background-color: white;
   padding: 20px;
@@ -191,24 +190,11 @@
   flex-direction: column;
 }
 
-.radio-group label {
-  font-weight: normal;
-}
-
 .form-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 20px;
-}
-
-.btn-cancel,
-.btn-register {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
 }
 
 .btn-cancel {
@@ -221,9 +207,74 @@
   color: white;
 }
 
+.btn-cancel,
+.btn-register {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .user-account {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  color: black;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border-radius: 5px;
+  margin-top: 5px;
+  z-index: 1000;
+}
+
+.user-dropdown-menu button {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-dropdown-menu button:hover {
+  background-color: #f3f4f6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    z-index: 1000;
+    height: 100%;
+    top: 60px;
+    left: 0;
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .top-nav h1 {
+    font-size: 18px;
+  }
+
+  .nav-label {
+    display: none;
+  }
+
+  .user-account span {
+    display: none;
+  }
 }
