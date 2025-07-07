@@ -1,13 +1,23 @@
 /* Reset default margin/padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-
-.hostel-management {
+body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f3f4f6;
+}
+
+/* Main layout */
+.hostel-management {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
+/* Top Navigation */
 .top-nav {
   display: flex;
   justify-content: space-between;
@@ -23,6 +33,10 @@
   gap: 10px;
 }
 
+.top-nav h1 {
+  font-size: 22px;
+}
+
 .menu-toggle {
   background: none;
   border: none;
@@ -31,6 +45,7 @@
   cursor: pointer;
 }
 
+/* Main Container */
 .main-container {
   display: flex;
   flex: 1;
@@ -38,6 +53,7 @@
   overflow: hidden;
 }
 
+/* Sidebar */
 .sidebar {
   width: 250px;
   background-color: #1e40af;
@@ -48,13 +64,6 @@
 
 .sidebar.closed {
   width: 60px;
-}
-
-.sidebar-header {
-  padding: 20px;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-nav {
@@ -82,6 +91,11 @@
   margin-right: 10px;
 }
 
+.nav-label {
+  white-space: nowrap;
+}
+
+/* Main Content */
 .main-content {
   flex: 1;
   background-color: #f3f4f6;
@@ -94,6 +108,7 @@
   margin-bottom: 20px;
 }
 
+/* Dashboard Stats */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -135,6 +150,11 @@
 .red { background-color: #ef4444; }
 .orange { background-color: #f97316; }
 
+/* Registration Form */
+.registration-content {
+  margin-top: 10px;
+}
+
 .registration-form {
   background-color: white;
   padding: 20px;
@@ -148,19 +168,8 @@
   gap: 30px;
 }
 
-.section-header {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.form-subsection {
-  border-top: 1px solid #ddd;
-  padding-top: 20px;
-}
-
 .subsection-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   margin-bottom: 15px;
 }
@@ -188,8 +197,10 @@
 .radio-group {
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
+/* Form Buttons */
 .form-buttons {
   display: flex;
   justify-content: flex-end;
@@ -197,25 +208,26 @@
   margin-top: 20px;
 }
 
-.btn-cancel {
-  background-color: #e5e7eb;
-  color: #374151;
-}
-
-.btn-register {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn-cancel,
-.btn-register {
+.form-buttons button {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
+  font-size: 14px;
 }
 
+.form-buttons button[type="submit"] {
+  background-color: #2563eb;
+  color: white;
+}
+
+.form-buttons button[type="button"] {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+/* User Dropdown */
 .user-account {
   display: flex;
   align-items: center;
@@ -251,8 +263,53 @@
 .user-dropdown-menu button:hover {
   background-color: #f3f4f6;
 }
+.loading-message {
+    text-align: center;
+    padding: 40px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
 
-/* Responsive */
+.loading-message h2 {
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.submitted-message {
+    text-align: center;
+    padding: 40px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.submitted-message h2 {
+    color: #155724;
+    margin-bottom: 15px;
+}
+
+.submitted-message p {
+    color: #155724;
+    margin-bottom: 10px;
+}
+
+.form-buttons button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.registration-note {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 20px 0;
+    color: #856404;
+}
+/* Responsive Design */
 @media (max-width: 768px) {
   .sidebar {
     position: absolute;
@@ -276,5 +333,9 @@
 
   .user-account span {
     display: none;
+  }
+
+  .sidebar.closed {
+    width: 0;
   }
 }

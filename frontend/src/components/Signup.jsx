@@ -26,7 +26,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('https://hmsbackendserver2.onrender.com/api/users/signup', {
+      const response = await fetch('http://localhost:8080/api/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

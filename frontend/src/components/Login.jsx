@@ -24,7 +24,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("https://hmsbackendserver2.onrender.com/api/users/login", {
+      const res = await fetch("http://localhost:8080/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -42,7 +42,9 @@ const Login = () => {
 
         if (data.user.role === "Student") {
           navigate("/student-dashboard");
-        } else {
+        }else if(data.user.role === "Warden/Admin"){
+          navigate("/student-dashboard");
+        }else {
           navigate("/");
         }
       } else {
