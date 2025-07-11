@@ -11,6 +11,7 @@ import Contact from "./components/Contact";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import StudentDashboard from "./components/dashboards/StudentDashboard"; 
+import AdminDashboard from "./components/dashboards/AdminDashboard";
 
 const HomePage = () => (
   <>
@@ -58,6 +59,13 @@ function App() {
           path="/student-dashboard"
           element={
               <StudentDashboard />
+          }
+        />
+
+        <Route
+          path="/admin-dashboard"
+          element={
+              <AdminDashboard />
           }
         />
       </Routes>

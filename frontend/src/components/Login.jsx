@@ -43,7 +43,7 @@ const Login = () => {
         if (data.user.role === "Student") {
           navigate("/student-dashboard");
         }else if(data.user.role === "Warden/Admin"){
-          navigate("/student-dashboard");
+          navigate("/admin-dashboard");
         }else {
           navigate("/");
         }

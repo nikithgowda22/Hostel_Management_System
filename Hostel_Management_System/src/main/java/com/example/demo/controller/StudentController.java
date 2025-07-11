@@ -39,7 +39,7 @@ public class StudentController {
     @Autowired
     private AccessLogRepository accessLogRepository;
 
-    // Register a student
+    // 1. Register a student
     @PostMapping("/register")
     public ResponseEntity<?> registerStudent(@RequestBody StudentRegistration registration) {
         try {
@@ -62,6 +62,9 @@ public class StudentController {
             String regNo = "REG-" + datePart + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
             registration.setRegNo(regNo);
 
+            // Set default status to PENDING
+            registration.setStatus("PENDING");
+
             StudentRegistration saved = registrationRepository.save(registration);
             logger.info("Registered successfully: {} ({})", saved.getName(), normalizedEmail);
 
@@ -73,7 +76,7 @@ public class StudentController {
         }
     }
 
-    // Check if already registered
+    // 2. Check if already registered
     @GetMapping("/check")
     public ResponseEntity<?> checkIfRegistered(@RequestParam String email) {
         try {
@@ -87,7 +90,7 @@ public class StudentController {
         }
     }
 
-    // File a complaint
+    // 3. File a complaint
     @PostMapping("/complaints")
     public ResponseEntity<String> fileComplaint(@RequestBody Complaint complaint) {
         complaint.setDate(LocalDate.now().toString());
@@ -95,7 +98,7 @@ public class StudentController {
         return ResponseEntity.ok("Complaint filed successfully");
     }
 
-    // Submit feedback
+    // 4. Submit feedback
     @PostMapping("/feedback")
     public ResponseEntity<String> submitFeedback(@RequestBody Feedback feedback) {
         feedback.setDate(LocalDate.now().toString());
@@ -103,7 +106,7 @@ public class StudentController {
         return ResponseEntity.ok("Feedback submitted successfully");
     }
 
-    // Log access
+    // 5. Log access
     @PostMapping("/logs")
     public ResponseEntity<String> logAccess(@RequestBody AccessLog log) {
         log.setTimestamp(LocalDateTime.now().toString());
@@ -111,9 +114,41 @@ public class StudentController {
         return ResponseEntity.ok("Log recorded");
     }
 
-    // Get logs for an email
+    // 6. Get logs for a student
     @GetMapping("/logs")
     public List<AccessLog> getLogs(@RequestParam String email) {
         return accessLogRepository.findByEmail(email.trim().toLowerCase());
     }
+
+    // 7. Admin: Get pending requests
+    @GetMapping("/requests")
+    public List<StudentRegistration> getPendingRequests() {
+        return registrationRepository.findByStatus("PENDING");
+    }
+
+    // 8. Admin: Approve student by ID
+    @PutMapping("/approve/{id}")
+    public ResponseEntity<?> approveStudent(@PathVariable String id) {
+        Optional<StudentRegistration> optional = registrationRepository.findById(id);
+        if (optional.isPresent()) {
+            StudentRegistration reg = optional.get();
+            reg.setStatus("APPROVED");
+            registrationRepository.save(reg);
+            return ResponseEntity.ok("Approved");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found");
+    }
+
+    @PutMapping("/reject/{id}")
+    public ResponseEntity<?> rejectStudent(@PathVariable String id) {
+        Optional<StudentRegistration> optional = registrationRepository.findById(id);
+        if (optional.isPresent()) {
+            StudentRegistration reg = optional.get();
+            reg.setStatus("REJECTED");
+            registrationRepository.save(reg);
+            return ResponseEntity.ok("Rejected");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found");
+    }
+
 }

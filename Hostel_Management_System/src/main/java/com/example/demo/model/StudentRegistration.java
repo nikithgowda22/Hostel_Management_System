@@ -22,10 +22,10 @@ public class StudentRegistration {
     private String name;
     private String gender;
     private String contact;
-    
-    @Indexed(unique = true)  // Ensure email is unique at database level
+
+    @Indexed(unique = true) // Ensure email is unique at database level
     private String email;
-    
+
     private String emergencyContact;
     private String guardianName;
     private String guardianRelation;
@@ -43,6 +43,15 @@ public class StudentRegistration {
     private String permCity;
     private String permState;
     private String permPincode;
+    private String status = "PENDING";
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     // Getters and Setters
 

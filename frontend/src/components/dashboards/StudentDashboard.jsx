@@ -18,6 +18,14 @@ const StudentDashboard = () => {
   const [complaint, setComplaint] = useState('');
   const [feedback, setFeedback] = useState('');
   const [accessLogs, setAccessLogs] = useState([]);
+  const [rooms, setRooms] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/rooms")
+      .then(res => res.json())
+      .then(data => setRooms(data))
+      .catch(err => console.error("Error fetching rooms:", err));
+  }, []);
 
   const [registrationData, setRegistrationData] = useState({
     roomNo: '',
@@ -108,21 +116,21 @@ const StudentDashboard = () => {
   };
 
   // New functions for complaints, feedback, and access logs
-const logAccess = async (type, userObj = user) => {
-  if (!userObj) return;
-  try {
-    const response = await fetch('http://localhost:8080/api/accesslog', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userObj.email, action: type, timestamp: new Date().toISOString() })
-    });
-    if (!response.ok) {
-      console.error('Failed to log access:', response.statusText);
+  const logAccess = async (type, userObj = user) => {
+    if (!userObj) return;
+    try {
+      const response = await fetch('http://localhost:8080/api/accesslog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userObj.email, action: type, timestamp: new Date().toISOString() })
+      });
+      if (!response.ok) {
+        console.error('Failed to log access:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error logging access:', error);
     }
-  } catch (error) {
-    console.error('Error logging access:', error);
-  }
-};
+  };
 
 
   const fetchAccessLogs = async (email) => {
@@ -167,42 +175,49 @@ const logAccess = async (type, userObj = user) => {
     }
   };
 
-  const calculateFees = (duration, foodStatus) => {
-    const baseFee = 7000; // Base fee per month
-    const foodFee = 2000; // Additional fee for food per month
+ const calculateFees = (duration, foodStatus, roomFee) => {
+  const foodFee = 2000; // Additional fee per month if food is selected
 
-    let durationMultiplier = 1;
-    if (duration === '3 Months') durationMultiplier = 3;
-    else if (duration === '6 Months') durationMultiplier = 6;
-    else if (duration === '12 Months') durationMultiplier = 12;
+  let durationMultiplier = 1;
+  if (duration === '3 Months') durationMultiplier = 3;
+  else if (duration === '6 Months') durationMultiplier = 6;
+  else if (duration === '12 Months') durationMultiplier = 12;
 
-    let totalFee = baseFee * durationMultiplier;
+  let totalFee = roomFee * durationMultiplier;
 
-    if (foodStatus === 'With Food') {
-      totalFee += foodFee * durationMultiplier;
-    }
+  if (foodStatus === 'With Food') {
+    totalFee += foodFee * durationMultiplier;
+  }
 
-    return totalFee.toString();
+  return totalFee.toString();
+};
+
+
+ const handleRegChange = (e) => {
+  const { name, value, type, checked } = e.target;
+
+  let newData = {
+    ...registrationData,
+    [name]: type === 'checkbox' ? checked : value
   };
 
-  const handleRegChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  // Get selected room's fee
+  const selectedRoom = rooms.find(r => r.roomNo === (name === "roomNo" ? value : newData.roomNo));
+  const roomFee = selectedRoom ? selectedRoom.fees : 0;
 
-    let newData = {
-      ...registrationData,
-      [name]: type === 'checkbox' ? checked : value
-    };
+  // Update fees based on selected values
+  if (name === "roomNo" || name === "duration" || name === "foodStatus") {
+    newData.fees = calculateFees(
+      name === 'duration' ? value : newData.duration,
+      name === 'foodStatus' ? value : newData.foodStatus,
+      roomFee
+    );
+  }
 
-    // Auto-calculate fees when duration or food status changes
-    if (name === 'duration' || name === 'foodStatus') {
-      newData.fees = calculateFees(
-        name === 'duration' ? value : newData.duration,
-        name === 'foodStatus' ? value : newData.foodStatus
-      );
-    }
+  setRegistrationData(newData);
+};
 
-    setRegistrationData(newData);
-  };
+
 
   const validateStep = (step) => {
     switch (step) {
@@ -355,11 +370,14 @@ const logAccess = async (type, userObj = user) => {
                 <label>Room No <span className="required">*</span></label>
                 <select name="roomNo" value={registrationData.roomNo} onChange={handleRegChange} required>
                   <option value="">Select Room</option>
-                  <option value="Room 101">Room 101</option>
-                  <option value="Room 102">Room 102</option>
-                  <option value="Room 103">Room 103</option>
+                  {rooms.map((room) => (
+                    <option key={room.id} value={room.roomNo}>
+                      {room.roomNo} - ₹{room.fees}/month
+                    </option>
+                  ))}
                 </select>
               </div>
+
               <div className="form-row">
                 <label>Duration <span className="required">*</span></label>
                 <select name="duration" value={registrationData.duration} onChange={handleRegChange} required>
