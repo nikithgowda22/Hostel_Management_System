@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import { useRef } from 'react';
 import { handlePayment } from "../payments/paymentUtils";
+import { generatePDFReceipt } from "../payments/generatePDFReceipt";
 
 const StudentDashboard = () => {
   const [currentView, setCurrentView] = useState('student-registration');
@@ -14,6 +15,7 @@ const StudentDashboard = () => {
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [registrationStatusChecked, setRegistrationStatusChecked] = useState(false);
   const formRef = useRef(null);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   // New state for complaints, feedback, and access logs
   const [complaint, setComplaint] = useState('');
@@ -28,24 +30,9 @@ const StudentDashboard = () => {
       .catch(err => console.error("Error fetching rooms:", err));
   }, []);
   const handleDownloadReceipt = () => {
-    const receiptData = `
-  ----- Hostel Payment Receipt -----
-  Name: ${registrationData.name}
-  Email: ${registrationData.email}
-  Course: ${registrationData.course || 'N/A'}
-  Duration: ${registrationData.duration}
-  Amount Paid: ₹${registrationData.fees}
-  Payment ID: ${registrationData.paymentId || 'N/A'}
-  Date: ${new Date().toLocaleString()}
-  ----------------------------------
-  `;
-
-    const blob = new Blob([receiptData], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `Hostel_Receipt_${registrationData.name.replace(/\s+/g, "_")}.txt`;
-    link.click();
+    generatePDFReceipt(registrationData);
   };
+
 
 
   const [registrationData, setRegistrationData] = useState({
@@ -178,36 +165,74 @@ const StudentDashboard = () => {
   };
 
   const submitComplaint = async () => {
-    if (!complaint.trim()) return alert('Please enter a complaint');
+    if (!complaint.trim()) {
+      alert("Please write a complaint before submitting.");
+      return;
+    }
+
+    const payload = {
+      studentEmail: user.email, // Assuming you have the student email from login
+      subject: "Hostel Complaint", // Optional or can be added as a separate input
+      description: complaint,
+    };
+
     try {
-      await fetch('http://localhost:8080/api/complaint', {
+      const response = await fetch('http://localhost:8080/api/complaints/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, complaint })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
-      alert('✅ Complaint submitted');
-      setComplaint('');
+
+      if (response.ok) {
+        const data = await response.json();
+        alert("Complaint submitted successfully!");
+        setComplaint(""); // Clear textarea
+      } else {
+        alert("Failed to submit complaint.");
+      }
     } catch (error) {
-      console.error('Error submitting complaint:', error);
-      alert('❌ Failed to submit complaint. Please try again.');
+      console.error("Error:", error);
+      alert("An error occurred while submitting the complaint.");
     }
   };
 
+
   const submitFeedback = async () => {
-    if (!feedback.trim()) return alert('Please enter feedback');
-    try {
-      await fetch('http://localhost:8080/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, feedback })
-      });
-      alert('✅ Feedback submitted');
-      setFeedback('');
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
-      alert('❌ Failed to submit feedback. Please try again.');
-    }
+  if (!feedbackMessage || !feedbackMessage.trim()) {
+    alert("Please write some feedback.");
+    return;
+  }
+
+  const payload = {
+    studentEmail: user.email,
+    message: feedbackMessage,
   };
+
+  try {
+    const response = await fetch("http://localhost:8080/api/feedbacks/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      alert("Feedback submitted successfully!");
+      setFeedbackMessage("");
+    } else {
+      alert("Failed to submit feedback.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("An error occurred.");
+  }
+};
+
+
+
 
   const calculateFees = (duration, foodStatus, roomFee) => {
     const foodFee = 2000; // Additional fee per month if food is selected
@@ -692,8 +717,8 @@ const StudentDashboard = () => {
       <h1 className="page-title">💬 Submit Feedback</h1>
       <div className="section-card">
         <textarea
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)}
+          value={feedbackMessage}
+          onChange={(e) => setFeedbackMessage(e.target.value)}
           placeholder="Write your feedback here..."
           rows={5}
           style={{
