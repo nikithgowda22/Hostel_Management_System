@@ -44,6 +44,8 @@ public class StudentRegistration {
     private String permState;
     private String permPincode;
     private String status = "PENDING";
+private String paymentStatus;
+private String paymentId;
 
     public String getStatus() {
         return status;
@@ -253,5 +255,23 @@ public class StudentRegistration {
 
     public void setPermPincode(String permPincode) {
         this.permPincode = permPincode;
+    }
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    // Setter for paymentStatus
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    // Getter for paymentId
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    // Setter for paymentId
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
     }
 }

@@ -150,5 +150,16 @@ public class StudentController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not Found");
     }
+    // StudentController.java
+@GetMapping("/registration")
+public ResponseEntity<?> getRegistrationByEmail(@RequestParam String email) {
+    Optional<StudentRegistration> registration = registrationRepository.findByEmail(email.toLowerCase().trim());
+    if (registration.isPresent()) {
+        return ResponseEntity.ok(registration.get());
+    } else {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not registered");
+    }
+}
+
 
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import { useRef } from 'react';
+import { handlePayment } from "../payments/paymentUtils";
 
 const StudentDashboard = () => {
   const [currentView, setCurrentView] = useState('student-registration');
@@ -26,6 +27,26 @@ const StudentDashboard = () => {
       .then(data => setRooms(data))
       .catch(err => console.error("Error fetching rooms:", err));
   }, []);
+  const handleDownloadReceipt = () => {
+    const receiptData = `
+  ----- Hostel Payment Receipt -----
+  Name: ${registrationData.name}
+  Email: ${registrationData.email}
+  Course: ${registrationData.course || 'N/A'}
+  Duration: ${registrationData.duration}
+  Amount Paid: ₹${registrationData.fees}
+  Payment ID: ${registrationData.paymentId || 'N/A'}
+  Date: ${new Date().toLocaleString()}
+  ----------------------------------
+  `;
+
+    const blob = new Blob([receiptData], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Hostel_Receipt_${registrationData.name.replace(/\s+/g, "_")}.txt`;
+    link.click();
+  };
+
 
   const [registrationData, setRegistrationData] = useState({
     roomNo: '',
@@ -67,7 +88,7 @@ const StudentDashboard = () => {
       }));
 
       // Check if already registered when component mounts
-      checkRegistrationStatus(storedUser.email);
+      checkRegistrationAndLoadData(storedUser.email);
       // Fetch access logs
       fetchAccessLogs(storedUser.email);
       // Log the login access
@@ -77,30 +98,42 @@ const StudentDashboard = () => {
 
   // Check registration status whenever the registration view is accessed
   useEffect(() => {
-    if (currentView === 'student-registration' && user && user.email && !registrationStatusChecked) {
-      checkRegistrationStatus(user.email);
-    }
-  }, [currentView, user, registrationStatusChecked]);
+    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-  const checkRegistrationStatus = async (email) => {
+    if (
+      currentView === 'student-registration' &&
+      storedUser &&
+      storedUser.email &&
+      !registrationStatusChecked
+    ) {
+      checkRegistrationAndLoadData(storedUser.email);
+    }
+  }, [currentView, registrationStatusChecked]);
+
+  const checkRegistrationAndLoadData = async (email) => {
     if (!email) return;
 
     setIsCheckingStatus(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/student/check?email=${encodeURIComponent(email.trim())}`);
-      const data = await response.json();
+      const res = await fetch(`http://localhost:8080/api/student/check?email=${encodeURIComponent(email.trim())}`);
+      const data = await res.json();
 
       if (data.isRegistered) {
         setIsAlreadyRegistered(true);
         setHasSubmitted(true);
+
+        // ✅ Load full registration data now
+        const regRes = await fetch(`http://localhost:8080/api/student/registration?email=${encodeURIComponent(email.trim())}`);
+        const regData = await regRes.json();
+        setRegistrationData(regData);
       } else {
         setIsAlreadyRegistered(false);
         setHasSubmitted(false);
       }
+
       setRegistrationStatusChecked(true);
-    } catch (error) {
-      console.error('Error checking registration status:', error);
-      // On error, allow user to try registration (fail-safe approach)
+    } catch (err) {
+      console.error("Error during registration status check or loading:", err);
       setIsAlreadyRegistered(false);
       setHasSubmitted(false);
       setRegistrationStatusChecked(true);
@@ -108,6 +141,7 @@ const StudentDashboard = () => {
       setIsCheckingStatus(false);
     }
   };
+
 
   const handleLogout = () => {
     logAccess('logout', user);
@@ -175,47 +209,47 @@ const StudentDashboard = () => {
     }
   };
 
- const calculateFees = (duration, foodStatus, roomFee) => {
-  const foodFee = 2000; // Additional fee per month if food is selected
+  const calculateFees = (duration, foodStatus, roomFee) => {
+    const foodFee = 2000; // Additional fee per month if food is selected
 
-  let durationMultiplier = 1;
-  if (duration === '3 Months') durationMultiplier = 3;
-  else if (duration === '6 Months') durationMultiplier = 6;
-  else if (duration === '12 Months') durationMultiplier = 12;
+    let durationMultiplier = 1;
+    if (duration === '3 Months') durationMultiplier = 3;
+    else if (duration === '6 Months') durationMultiplier = 6;
+    else if (duration === '12 Months') durationMultiplier = 12;
 
-  let totalFee = roomFee * durationMultiplier;
+    let totalFee = roomFee * durationMultiplier;
 
-  if (foodStatus === 'With Food') {
-    totalFee += foodFee * durationMultiplier;
-  }
+    if (foodStatus === 'With Food') {
+      totalFee += foodFee * durationMultiplier;
+    }
 
-  return totalFee.toString();
-};
-
-
- const handleRegChange = (e) => {
-  const { name, value, type, checked } = e.target;
-
-  let newData = {
-    ...registrationData,
-    [name]: type === 'checkbox' ? checked : value
+    return totalFee.toString();
   };
 
-  // Get selected room's fee
-  const selectedRoom = rooms.find(r => r.roomNo === (name === "roomNo" ? value : newData.roomNo));
-  const roomFee = selectedRoom ? selectedRoom.fees : 0;
 
-  // Update fees based on selected values
-  if (name === "roomNo" || name === "duration" || name === "foodStatus") {
-    newData.fees = calculateFees(
-      name === 'duration' ? value : newData.duration,
-      name === 'foodStatus' ? value : newData.foodStatus,
-      roomFee
-    );
-  }
+  const handleRegChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
-  setRegistrationData(newData);
-};
+    let newData = {
+      ...registrationData,
+      [name]: type === 'checkbox' ? checked : value
+    };
+
+    // Get selected room's fee
+    const selectedRoom = rooms.find(r => r.roomNo === (name === "roomNo" ? value : newData.roomNo));
+    const roomFee = selectedRoom ? selectedRoom.fees : 0;
+
+    // Update fees based on selected values
+    if (name === "roomNo" || name === "duration" || name === "foodStatus") {
+      newData.fees = calculateFees(
+        name === 'duration' ? value : newData.duration,
+        name === 'foodStatus' ? value : newData.foodStatus,
+        roomFee
+      );
+    }
+
+    setRegistrationData(newData);
+  };
 
 
 
@@ -319,7 +353,7 @@ const StudentDashboard = () => {
   ];
 
   const renderRegistration = () => {
-    // Show loading state while checking registration status
+    // 1. Loading while checking status
     if (isCheckingStatus && !registrationStatusChecked) {
       return (
         <div className="loading-message">
@@ -329,7 +363,51 @@ const StudentDashboard = () => {
       );
     }
 
-    // Show already registered message
+    // 2. Show if approved
+    if (registrationData && registrationData.status === 'APPROVED') {
+      return (
+        <div className="submitted-message">
+          <h2 className="success-message">🎉 Your application has been approved!</h2>
+          <div className="payment-section">
+            <p><strong>Duration:</strong> {registrationData.duration}</p>
+            <p><strong>Food Status:</strong> {registrationData.foodStatus}</p>
+            <p><strong>Total Fees:</strong> ₹{registrationData.fees}</p>
+
+            {registrationData.paymentStatus === "Paid" ? (
+              <>
+                <p className="paid-status" style={{ color: "green", fontWeight: "bold" }}>
+                  ✅ Payment Completed
+                </p>
+                <button className="download-btn" onClick={handleDownloadReceipt}>
+                  🧾 Download Receipt
+                </button>
+              </>
+            ) : (
+              <button
+                className="pay-now-button"
+                onClick={() =>
+                  handlePayment(registrationData.fees, {
+                    name: registrationData.name,
+                    email: registrationData.email,
+                    contact: registrationData.contact,
+                  }, () => {
+                    // 🔄 Refresh the payment status safely without reload
+                    alert("✅ Payment recorded successfully.");
+                    checkRegistrationAndLoadData(user.email);
+                  })
+                }
+              >
+                💳 Pay Now
+              </button>
+
+
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // 3. Already submitted but not approved yet
     if (isAlreadyRegistered || hasSubmitted) {
       return (
         <div className="submitted-message">
@@ -338,7 +416,7 @@ const StudentDashboard = () => {
           <p><strong>Note:</strong> Multiple registrations are not allowed.</p>
           <div style={{ marginTop: '20px' }}>
             <button
-              onClick={() => checkRegistrationStatus(user.email)}
+              onClick={() => checkRegistrationAndLoadData(user.email)}
               disabled={isCheckingStatus}
               style={{
                 padding: '10px 20px',
@@ -356,13 +434,16 @@ const StudentDashboard = () => {
       );
     }
 
+    // 4. Main multi-step registration form
     return (
       <div className="registration-content">
         <h1 className="page-title">Student Registration</h1>
         <div className="registration-note">
           <p><strong>Important:</strong> You can only register once. Please fill all details carefully.</p>
         </div>
+
         <form className="registration-form" ref={formRef} onSubmit={handleRegistrationSubmit}>
+          {/* Step 1 - Room Details */}
           {registrationStep === 1 && (
             <>
               <h3 className="subsection-title">Room Related Info</h3>
@@ -388,6 +469,7 @@ const StudentDashboard = () => {
                   <option value="12 Months">12 Months</option>
                 </select>
               </div>
+
               <div className="form-row">
                 <label>Food Status <span className="required">*</span></label>
                 <div className="radio-group">
@@ -414,6 +496,7 @@ const StudentDashboard = () => {
                   </label>
                 </div>
               </div>
+
               <div className="form-row">
                 <label>Total Fees</label>
                 <input
@@ -424,6 +507,7 @@ const StudentDashboard = () => {
                   style={{ backgroundColor: '#f0f0f0' }}
                 />
               </div>
+
               <div className="form-row">
                 <label>Stay From <span className="required">*</span></label>
                 <input type="date" name="stayFrom" value={registrationData.stayFrom} onChange={handleRegChange} required />
@@ -547,14 +631,13 @@ const StudentDashboard = () => {
             </>
           )}
 
+          {/* Navigation Buttons */}
           <div className="form-buttons">
             {registrationStep > 1 && (
               <button type="button" onClick={prevRegStep}>Previous</button>
             )}
             {registrationStep < 3 ? (
-              <button type="button" onClick={nextRegStep}>
-                Next
-              </button>
+              <button type="button" onClick={nextRegStep}>Next</button>
             ) : (
               <button type="submit" disabled={isCheckingStatus}>
                 {isCheckingStatus ? 'Submitting...' : 'Register'}
@@ -565,6 +648,7 @@ const StudentDashboard = () => {
       </div>
     );
   };
+
 
   // New render functions for complaints, feedback, and logs
   const renderComplaints = () => (
