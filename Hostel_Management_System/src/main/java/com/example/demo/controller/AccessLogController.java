@@ -1,4 +1,5 @@
 package com.example.demo.controller;
+
 import com.example.demo.model.AccessLog;
 import com.example.demo.repository.AccessLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/accesslog")
-@CrossOrigin(origins = "http://localhost:5173") // optional if already handled globally
+@CrossOrigin(origins = "http://localhost:5173")
 public class AccessLogController {
 
     @Autowired
@@ -16,11 +17,21 @@ public class AccessLogController {
 
     @GetMapping("/{email}")
     public List<AccessLog> getAccessLogsByEmail(@PathVariable String email) {
-        return accessLogRepository.findByEmail(email);
+        return accessLogRepository.findByEmailOrderByTimestampDesc(email); // ✅ FIXED METHOD NAME
     }
 
     @PostMapping
     public AccessLog logAccess(@RequestBody AccessLog accessLog) {
-        return accessLogRepository.save(accessLog);
+        AccessLog saved = accessLogRepository.save(accessLog);
+
+        List<AccessLog> logs = accessLogRepository.findByEmailOrderByTimestampDesc(accessLog.getEmail());
+
+        // Keep only the latest 10 entries
+        if (logs.size() > 10) {
+            List<AccessLog> toDelete = logs.subList(10, logs.size());
+            accessLogRepository.deleteAll(toDelete);
+        }
+
+        return saved;
     }
 }

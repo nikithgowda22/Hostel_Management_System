@@ -1,3 +1,6 @@
 com\example\demo\controller\ComplaintController.class
-com\example\demo\controller\FeedbackController.class
+com\example\demo\model\LeaveApplication.class
 com\example\demo\controller\PaymentController.class
+com\example\demo\controller\AdminController.class
+com\example\demo\controller\FeedbackController.class
+com\example\demo\repository\LeaveApplicationRepository.class

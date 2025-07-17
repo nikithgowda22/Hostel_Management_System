@@ -1,5 +1,6 @@
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\config\CorsConfig.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\controller\AccessLogController.java
+C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\controller\AdminController.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\controller\ComplaintController.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\controller\FeedbackController.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\controller\PaymentController.java
@@ -10,12 +11,14 @@ C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\ma
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\AccessLog.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\Complaint.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\Feedback.java
+C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\LeaveApplication.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\Room.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\StudentRegistration.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\model\User.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\AccessLogRepository.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\ComplaintRepository.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\FeedbackRepository.java
+C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\LeaveApplicationRepository.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\RoomRepository.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\StudentRegistrationRepository.java
 C:\Users\LENOVO\Desktop\Hostel_Management_System\Hostel_Management_System\src\main\java\com\example\demo\repository\UserRepository.java

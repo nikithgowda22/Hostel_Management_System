@@ -8,6 +8,9 @@ import com.example.demo.repository.AccessLogRepository;
 import com.example.demo.repository.ComplaintRepository;
 import com.example.demo.repository.FeedbackRepository;
 import com.example.demo.repository.StudentRegistrationRepository;
+import com.example.demo.repository.LeaveApplicationRepository;
+import com.example.demo.repository.RoomRepository;
+import com.example.demo.model.LeaveApplication;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -38,6 +41,14 @@ public class StudentController {
 
     @Autowired
     private AccessLogRepository accessLogRepository;
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
+    private LeaveApplicationRepository leaveRepo;
+
+
 
     // 1. Register a student
     @PostMapping("/register")
@@ -160,6 +171,73 @@ public ResponseEntity<?> getRegistrationByEmail(@RequestParam String email) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not registered");
     }
 }
+@GetMapping("/all")
+public List<StudentRegistration> getAllStudents() {
+    return registrationRepository.findAll();
+}
+
+@GetMapping("/complaints")
+public List<Complaint> getAllComplaints() {
+    return complaintRepository.findAll();
+}
+
+@GetMapping("/feedbacks")
+public List<Feedback> getAllFeedbacks() {
+    return feedbackRepository.findAll();
+}
+
+@GetMapping("/dashboard-stats")
+public ResponseEntity<Map<String, Integer>> getDashboardStats() {
+    try {
+        int totalStudents = registrationRepository.findAll().size();
+        int totalRooms = roomRepository.findAll().size();
+        int totalCourses = 7; // If you want to make this dynamic later, use a course repository
+        int totalComplaints = complaintRepository.findAll().size();
+        int totalFeedbacks = feedbackRepository.findAll().size();
+        int leaveCount = leaveRepo.findAll().size();
+
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("students", totalStudents);
+        stats.put("rooms", totalRooms);
+        stats.put("courses", totalCourses);
+        stats.put("complaints", totalComplaints);
+        stats.put("feedbacks", totalFeedbacks);
+        stats.put("leaves", leaveCount);
+
+        return ResponseEntity.ok(stats);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of());
+    }
+}
+// 1. Student applies for leave
+@PostMapping("/leave")
+public ResponseEntity<?> applyLeave(@RequestBody LeaveApplication leave) {
+    leave.setAppliedDate(LocalDate.now().toString());
+    leave.setStatus("PENDING");
+    LeaveApplication saved = leaveRepo.save(leave);
+    return ResponseEntity.ok(saved);
+}
+
+// 2. Get leave applications by student
+@GetMapping("/leave")
+public ResponseEntity<List<LeaveApplication>> getStudentLeaves(@RequestParam String email) {
+    List<LeaveApplication> leaves = leaveRepo.findByStudentEmail(email.toLowerCase().trim());
+    return ResponseEntity.ok(leaves);
+}
+@GetMapping("/leavecount")
+public ResponseEntity<Map<String, Integer>> getLeaveCount() {
+    try {
+        int totalLeaves = (int) leaveRepo.count();  // Use count() for better performance
+        Map<String, Integer> result = new HashMap<>();
+        result.put("totalLeaves", totalLeaves);
+        return ResponseEntity.ok(result);
+    } catch (Exception e) {
+        logger.error("Failed to fetch leave count", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("totalLeaves", -1)); // Still return "totalLeaves" to avoid frontend errors
+    }
+}
+
 
 
 }

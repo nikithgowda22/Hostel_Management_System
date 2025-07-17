@@ -3,6 +3,7 @@ import './Dashboard.css';
 import { useRef } from 'react';
 import { handlePayment } from "../payments/paymentUtils";
 import { generatePDFReceipt } from "../payments/generatePDFReceipt";
+import axios from 'axios';
 
 const StudentDashboard = () => {
   const [currentView, setCurrentView] = useState('student-registration');
@@ -16,7 +17,12 @@ const StudentDashboard = () => {
   const [registrationStatusChecked, setRegistrationStatusChecked] = useState(false);
   const formRef = useRef(null);
   const [feedbackMessage, setFeedbackMessage] = useState("");
-
+  const [leaveForm, setLeaveForm] = useState({
+    reason: '',
+    fromDate: '',
+    toDate: ''
+  });
+  const [studentLeaves, setStudentLeaves] = useState([]);
   // New state for complaints, feedback, and access logs
   const [complaint, setComplaint] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -32,7 +38,42 @@ const StudentDashboard = () => {
   const handleDownloadReceipt = () => {
     generatePDFReceipt(registrationData);
   };
+  const fetchStudentLeaves = async () => {
+    if (!user || !user.email) return; // ✅ Prevent error when user is null
 
+    try {
+      const res = await axios.get(`http://localhost:8080/api/student/leave?email=${user.email}`);
+      setStudentLeaves(res.data);
+    } catch (err) {
+      console.error('Error fetching leaves:', err);
+    }
+  };
+
+
+  useEffect(() => {
+    if (user && user.email) {
+      fetchStudentLeaves();
+    }
+  }, [user]);
+
+
+  const handleLeaveSubmit = async (e) => {
+    e.preventDefault();
+    const leaveData = {
+      ...leaveForm,
+      studentEmail: user.email,
+      studentName: user.name
+    };
+    try {
+      await axios.post('http://localhost:8080/api/student/leave', leaveData);
+      setLeaveForm({ reason: '', fromDate: '', toDate: '' });
+      fetchStudentLeaves();
+      alert('Leave application submitted successfully.');
+    } catch (err) {
+      alert('Error submitting leave.');
+      console.error(err);
+    }
+  };
 
 
   const [registrationData, setRegistrationData] = useState({
@@ -143,26 +184,38 @@ const StudentDashboard = () => {
       const response = await fetch('http://localhost:8080/api/accesslog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userObj.email, action: type, timestamp: new Date().toISOString() })
+        body: JSON.stringify({
+          email: userObj.email,
+          action: type,
+          timestamp: new Date().toISOString()
+        }),
       });
+
       if (!response.ok) {
-        console.error('Failed to log access:', response.statusText);
+        console.error('❌ Failed to log access:', response.statusText);
       }
     } catch (error) {
-      console.error('Error logging access:', error);
+      console.error('❌ Error logging access:', error);
     }
   };
+
 
 
   const fetchAccessLogs = async (email) => {
     try {
       const res = await fetch(`http://localhost:8080/api/accesslog/${email}`);
       const logs = await res.json();
-      setAccessLogs(logs);
+      setAccessLogs(logs.slice(0, 10)); // Ensure only latest 10 shown
     } catch (error) {
-      console.error('Error fetching access logs:', error);
+      console.error('❌ Error fetching access logs:', error);
     }
   };
+
+  useEffect(() => {
+    if (user && user.email) {
+      fetchAccessLogs(user.email);
+    }
+  }, [user]);
 
   const submitComplaint = async () => {
     if (!complaint.trim()) {
@@ -200,36 +253,36 @@ const StudentDashboard = () => {
 
 
   const submitFeedback = async () => {
-  if (!feedbackMessage || !feedbackMessage.trim()) {
-    alert("Please write some feedback.");
-    return;
-  }
-
-  const payload = {
-    studentEmail: user.email,
-    message: feedbackMessage,
-  };
-
-  try {
-    const response = await fetch("http://localhost:8080/api/feedbacks/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (response.ok) {
-      alert("Feedback submitted successfully!");
-      setFeedbackMessage("");
-    } else {
-      alert("Failed to submit feedback.");
+    if (!feedbackMessage || !feedbackMessage.trim()) {
+      alert("Please write some feedback.");
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    alert("An error occurred.");
-  }
-};
+
+    const payload = {
+      studentEmail: user.email,
+      message: feedbackMessage,
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/api/feedbacks/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        alert("Feedback submitted successfully!");
+        setFeedbackMessage("");
+      } else {
+        alert("Failed to submit feedback.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred.");
+    }
+  };
 
 
 
@@ -374,7 +427,8 @@ const StudentDashboard = () => {
     { id: 'student-registration', label: 'Student Registration', icon: '👥' },
     { id: 'complaints', label: 'Complaints', icon: '📝' },
     { id: 'feedback', label: 'Feedback', icon: '💬' },
-    { id: 'user-access-logs', label: 'User Access Logs', icon: '📋' }
+    { id: 'user-access-logs', label: 'User Access Logs', icon: '📋' },
+    { id: 'leave-applications', label: 'Leave Applications', icon: '📋' }
   ];
 
   const renderRegistration = () => {
@@ -750,7 +804,7 @@ const StudentDashboard = () => {
 
   const renderLogs = () => (
     <div className="dashboard-content">
-      <h1 className="page-title">📋 User Access Logs</h1>
+      <h2 className="page-title">📋 Recent Access Logs</h2>
       <div className="section-card">
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -761,24 +815,86 @@ const StudentDashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {accessLogs.map((log, i) => (
-              <tr key={i}>
-                <td style={{ padding: '12px', border: '1px solid #ddd' }}>{log.action.toUpperCase()}</td>
-                <td style={{ padding: '12px', border: '1px solid #ddd' }}>{new Date(log.timestamp).toLocaleDateString()}</td>
-                <td style={{ padding: '12px', border: '1px solid #ddd' }}>{new Date(log.timestamp).toLocaleTimeString()}</td>
+            {accessLogs.length > 0 ? (
+              accessLogs.map((log, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{log.action.toUpperCase()}</td>
+                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{new Date(log.timestamp).toLocaleDateString()}</td>
+                  <td style={{ padding: '12px', border: '1px solid #ddd' }}>{new Date(log.timestamp).toLocaleTimeString()}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
+                  No access logs available
+                </td>
               </tr>
-            ))}
-
+            )}
           </tbody>
         </table>
-        {accessLogs.length === 0 && (
-          <p style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-            No access logs available
-          </p>
-        )}
       </div>
     </div>
+
   );
+
+  const renderleaves = () => (
+    <div className="leave-container">
+      <h2 className="leave-heading">Apply for Leave</h2>
+      <form onSubmit={handleLeaveSubmit} className="leave-form">
+        <input
+          type="text"
+          placeholder="Reason"
+          value={leaveForm.reason}
+          onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
+          required
+          className="leave-input"
+        />
+        <input
+          type="date"
+          value={leaveForm.fromDate}
+          onChange={(e) => setLeaveForm({ ...leaveForm, fromDate: e.target.value })}
+          required
+          className="leave-input"
+        />
+        <input
+          type="date"
+          value={leaveForm.toDate}
+          onChange={(e) => setLeaveForm({ ...leaveForm, toDate: e.target.value })}
+          required
+          className="leave-input"
+        />
+        <button type="submit" className="leave-button">
+          Submit Leave
+        </button>
+      </form>
+
+      <h3 className="leave-subheading">Your Leave Applications</h3>
+      <table className="leave-table">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Reason</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {studentLeaves.map((leave) => (
+            <tr key={leave.id}>
+              <td>{leave.fromDate}</td>
+              <td>{leave.toDate}</td>
+              <td>{leave.reason}</td>
+              <td className={`status ${leave.status.toLowerCase()}`}>
+                {leave.status}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+
 
   const renderContent = () => {
     switch (currentView) {
@@ -790,6 +906,8 @@ const StudentDashboard = () => {
         return renderFeedback();
       case 'user-access-logs':
         return renderLogs();
+      case 'leave-applications':
+        return renderleaves();
       default:
         return (
           <div className="dashboard-content">
@@ -817,10 +935,48 @@ const StudentDashboard = () => {
               <span className="dropdown-arrow">▼</span>
             </div>
             {showDropdown && (
-              <div className="user-dropdown-menu">
-                <button onClick={handleLogout}>Logout</button>
+              <div
+                className="user-dropdown-menu"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  backgroundColor: '#fff',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                  padding: '10px',
+                  zIndex: 1000,
+                  minWidth: '200px',
+                }}
+              >
+                <span
+                  style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontWeight: 'bold',
+                    color: '#333',
+                  }}
+                >
+                  {user.email}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    backgroundColor: '#f44336',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    width: '100%',
+                  }}
+                >
+                  Logout
+                </button>
               </div>
             )}
+
           </div>
         </div>
       </nav>

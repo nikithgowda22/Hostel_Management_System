@@ -5,6 +5,7 @@ import com.example.demo.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 import java.util.List;
 
@@ -28,4 +29,15 @@ public class RoomController {
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
     }
+    @DeleteMapping("/{roomNo}")
+public ResponseEntity<?> deleteRoom(@PathVariable String roomNo) {
+    Room room = roomRepository.findByRoomNo(roomNo);
+    if (room == null) {
+        return ResponseEntity.status(404).body(Map.of("message", "Room not found"));
+    }
+
+    roomRepository.delete(room);
+    return ResponseEntity.ok(Map.of("message", "Room deleted successfully"));
+}
+
 }
